@@ -193,3 +193,111 @@ minification - removal of all unnecessary characters from source code without ch
 webpack - module bundler of JS apps
 module - any file that can be imported and used in my app
          building block of a Webpack bundle */
+
+/* should test one method at a time
+my tests for one function should not depend upon an external function behaving correctly (esp if that function is being tested elsewhere)
+
+Explain what tightly coupled code is
+I had lots of tightly couple code in my early projects
+tightly coupled - functions that include references to functions in other parts of the code
+                  tightly coupled code is hard to test
+
+making something like this function testable means splitting up the different things happening 
+prompt and alert don't need to be tested because they're built in to the browser */
+function draftGuessingGame() {
+  const magicNumber = 22;
+  const guess = prompt("guess a number between 1 and 100!");
+  if (guess > magicNumber) {
+    alert("YOUR GUESS IS TOO BIG");
+  } else if (guess < magicNumber) {
+    alert("YOUR GUESS IS TOO SMALL");
+  } else if (guess == magicNumber) {
+    alert("YOU DID IT! 🎉");
+  }
+}
+
+// I do need to test the number logic, which is easier to do once I untangle it from the other functions
+function evaluateGuess(magicNumber, guess) {
+  if (guess > magicNumber) {
+    return "YOUR GUESS IS TOO BIG";
+  } else if (guess < magicNumber) {
+    return "YOUR GUESS IS TOO SMALL";
+  } else if (guess == magicNumber) {
+    return "YOU DID IT! 🎉";
+  }
+}
+
+/* refactoring this way is much nicer bc the implementation is easier to extend
+prompt and alert can be switched out for DOM methods
+also easier to make the game more advanced by letting the user name multiple guesses */
+function guessingGame() {
+  const magicNumber = 22;
+  const guess = prompt("guess a number between 1 and 100!");
+  const message = evaluateGuess(magicNumber, guess);
+  alert(message);
+}
+
+guessingGame();
+
+/* TDD encourages better program architecture
+- What should I try before testing tightly coupled code? 
+  split up the code to make it more testable
+- How can I test code that can't be decoupled?
+  1. by removing dependencies from my code
+  2. mocking
+Describe a pure function and how it relates to TDD 
+- What are the two requirements for a function to be pure?
+  1. it must only depend on its input arguments
+     it always returns the same result if the same arguments are passed in
+     it does not depend on any state, or data, change during a program's execution
+  2. it does not produce observable side effects i.e. network requests, input and output devices,or data mutation
+- What are side effects and why is it important to identify them when testing a function?
+  side effects - any interaction with the outside world from within a function
+                 exs. changing a variable that exists outside the function
+                      calling another method from within a function
+                      making a HTTP request
+                      printing to a screen or console
+                      DOM query/manipulation
+                      Math.random
+                      getting the current time
+  for a function to be declared pure, it must not have any side effects 
+  
+this function is pure because it doesn't depend on any external input, 
+doesn't mutate any data, and doesn't have any size effects */
+function priceAfterTax(productPrice) {
+  return productPrice * 0.2 + productPrice;
+}
+
+/* this function is impure because it depends on the value of the tax variable */
+let tax = 20;
+function calculateTax(productPrice) {
+  return productPrice * (tax / 100) + productPrice;
+}
+/* pure functions are used heavily in Functional Programming
+Functioning Programming - programming paradigm that treats computation as the evaluation of mathematical functions
+                          and avoids changing-state and mutable data
+                          it emphasizes the use of pure functions, higher-order functions, and immutability
+ReactJS require the use of pure functions
+not all functions need to be, or should be, pure
+exs. event handler for a button press that manipulates the DOM is not a candidate for a pure function
+     and the event handler can call other pure functions which will reduce the number of impure functions in my app
+pure functions are immediately testable
+
+Explain what mocking is 
+mocking - writing "fake" versions of a function that always beahves exactly how I want
+- When would I use a mock function?
+  ex. I'm testing a function that gets information from a DOM input, I can create a fake version of the input-grabbing
+  function that always returns a specific value and use that mock function in my test
+- I could use mock functions in place of areal network or database call 
+  I need to do unit tests and automated tests many, many times, and I need to run them very fast
+  and in some cases, it'll be impossible to use a real API 
+  even if I had a test API, it would slow me down 
+  ex. I cannot do 200 test cc transactions
+  also, network calls tend to fail some of the time 
+  mock functions return mock values, and they allow me to inspect the mock function after I finish running the tests
+  so I can check that the mock function was called in the way that I expected it to 
+  - How should I test incoming query messages?
+- Why should I not test implementation?
+- Should I test private metnods?
+- Why should I not test outgoing messages with no side effects?
+*/

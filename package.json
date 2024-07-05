@@ -1,8 +1,9 @@
 {
   "name": "testing-javascript",
   "version": "1.0.0",
+  "type": "module",
   "description": "",
-  "main": "script.js",
+  "main": "order-total.js",
   "scripts": {
     "test": "jest",
     "watch": "jest --watch *.js"

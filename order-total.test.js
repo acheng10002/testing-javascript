@@ -42,12 +42,53 @@ it("works", () => {
   // expect(1).toBe(2);
 });
 
+const emptyFunction = () => {};
+
+/* 
+1. fetch data, an async API call to vatapi.com,
+2. parse the response from the fetch
+3. take the parsed response and extract the vat rate
+4. orderTotal is now asynchronous and will return a promise 
+   multiply orderTotal's return value with the vat rate 
+
+Good question to always ask myself: What is the smallest possible step I can take?
+
+all the tests need to be changed to expect a promise 
+first test, makes sure vatapi.com gets called */
+it("calls vatapi.com correctly", () => {
+  let isFakeFetchCalled = false;
+  /* fakeFetch has assertion for what url should be with beginning what it is, and
+  the country code the same as order.country */
+  const fakeFetch = (url) => {
+    expect(url).toBe(
+      "https://eu.vatapi.com/v2/vat-rate-check?rate_type=TBE&country_code=DE"
+    );
+    // after assertion, toggles the flag
+    isFakeFetchCalled = true;
+  };
+  orderTotal(fakeFetch, {
+    country: "DE",
+    items: [{ name: "dragon waffles", price: 20, quantity: 2 }],
+    /* how can fetch be inspected to find what the result should be 
+  instead, use mock functions, which will run immediately 
+  use something that overrides require, and allows me to inject it into the runtime */
+  }).then((result) => {
+    // expect the flag to be toggled
+    expect(isFakeFetchCalled).toBe(true);
+  });
+});
+
+it("if country code specified", () => {});
+
 it("Quantity", () =>
-  expect(
-    orderTotal({
-      items: [{ name: "dragon candy", price: 2, quantity: 3 }],
-    })
-  ).toBe(6));
+  orderTotal(emptyFunction, {
+    items: [{ name: "dragon candy", price: 2, quantity: 3 }],
+  }).then((result) => expect(result).toBe(6)));
+
+it("No quantity specified", () =>
+  orderTotal(emptyFunction, {
+    items: [{ name: "dragon candy", price: 3 }],
+  }).then((result) => expect(result).toBe(3)));
 
 // if (
 //   orderTotal({
@@ -58,14 +99,12 @@ it("Quantity", () =>
 // }
 
 it("Happy path (Example 1)", () =>
-  expect(
-    orderTotal({
-      items: [
-        { name: "dragon food", price: 8, quantity: 1 },
-        { name: "dragon cage (small)", price: 800, quantitiy: 1 },
-      ],
-    })
-  ).toBe(808));
+  orderTotal(emptyFunction, {
+    items: [
+      { name: "dragon food", price: 8, quantity: 1 },
+      { name: "dragon cage (small)", price: 800, quantity: 1 },
+    ],
+  }).then((result) => expect(result).toBe(808)));
 
 // if (
 //   orderTotal({
@@ -79,32 +118,23 @@ it("Happy path (Example 1)", () =>
 // }
 
 it("Happy path (Example 2)", () =>
-  expect(
-    orderTotal({
-      items: [
-        { name: "dragon collar", price: 20, quantity: 1 },
-        { name: "dragon chew toy", price: 40, quantitiy: 1 },
-      ],
-    })
-  ).toBe(60));
+  orderTotal(emptyFunction, {
+    items: [
+      { name: "dragon collar", price: 20, quantity: 1 },
+      { name: "dragon chew toy", price: 40, quantity: 1 },
+    ],
+  }).then((result) => expect(result).toBe(60)));
 
 // if (
 //   orderTotal({
 //     items: [
 //       { name: "dragon collar", price: 20, quantity: 1 },
-//       { name: "dragon chew toy", price: 40, quantitiy: 1 },
+//       { name: "dragon chew toy", price: 40, quantity: 1 },
 //     ],
 //   }) !== 60
 // ) {
 //   throw new Error("Check fail: Happy path (Example 2) ");
 // }
-
-it("No quantity specified", () =>
-  expect(
-    orderTotal({
-      items: [{ name: "dragon candy", price: 3 }],
-    })
-  ).toBe(3));
 
 // if (
 //   orderTotal({
@@ -218,8 +248,8 @@ assertions use Jest's built-in expect function with matchers like toBe
 this test just checks that my module exists 
 "FlickrFetcher" describes the suite of tests
 arrow function is the callback function containing the test cases */
-describe("FlickrFetcher", () => {
-  /* first test case - checks existence */
+/* describe("FlickrFetcher", () => {
+  /* first test case - checks existence 
   test("should exist", () => {
     // assertion that checks if FlickrFetcher is defined
     expect(FlickrFetcher).toBeDefined();
@@ -296,48 +326,47 @@ describe("FlickrFetcher", () => {
       //   let actual = FlickrFetcher.photoObjToURL(input);
       //   /* expected variable holds the expected URL that should be returned by
       //   the photoObjToURL method  when passed the input object */
-      //   let expected =
-      //     "https://farm2.staticflickr.com/1669/25373736106_146731fcb7_b.jpg";
-      //   // assertion that checks if the value of actual matches expected
-      //   expect(actual).toBe(expected);
+//   let expected =
+//     "https://farm2.staticflickr.com/1669/25373736106_146731fcb7_b.jpg";
+//   // assertion that checks if the value of actual matches expected
+//   expect(actual).toBe(expected);
 
-      //   // second test with a different object
-      //   input = {
-      //     id: "24765033584",
-      //     owner: "27294864@N02",
-      //     secret: "3c190c104e",
-      //     server: "1514",
-      //     farm: 2,
-      //     title: "the other cate",
-      //     ispublic: 1,
-      //     isfriend: 0,
-      //     isfamily: 0,
-      //   };
-      //   expected =
-      //     "https://farm2.staticflickr.com/1514/24765033584_3c190c104e_b.jpg";
-      //   actual = FlickrFetcher.photoObjToURL(input);
-      //   expect(actual).toBe(expected);
+//   // second test with a different object
+//   input = {
+//     id: "24765033584",
+//     owner: "27294864@N02",
+//     secret: "3c190c104e",
+//     server: "1514",
+//     farm: 2,
+//     title: "the other cate",
+//     ispublic: 1,
+//     isfriend: 0,
+//     isfamily: 0,
+//   };
+//   expected =
+//     "https://farm2.staticflickr.com/1514/24765033584_3c190c104e_b.jpg";
+//   actual = FlickrFetcher.photoObjToURL(input);
+//   expect(actual).toBe(expected);
 
-      //   input = {
-      //     id: "24770505034",
-      //     owner: "97248275@N03",
-      //     secret: "31a9986429",
-      //     server: "1577",
-      //     farm: 2,
-      //     title: "Some pug picture",
-      //     ispublic: 1,
-      //     isfriend: 0,
-      //     isfamily: 0,
-      //   };
-      //   expected =
-      //     "https://farm2.staticflickr.com/1577/24770505034_31a9986429_b.jpg";
-      //   actual = FlickrFetcher.photoObjToURL(input);
-      //   expect(actual).toBe(expected);
-    });
+//   input = {
+//     id: "24770505034",
+//     owner: "97248275@N03",
+//     secret: "31a9986429",
+//     server: "1577",
+//     farm: 2,
+//     title: "Some pug picture",
+//     ispublic: 1,
+//     isfriend: 0,
+//     isfamily: 0,
+//   };
+//   expected =
+//     "https://farm2.staticflickr.com/1577/24770505034_31a9986429_b.jpg";
+//   actual = FlickrFetcher.photoObjToURL(input);
+//   expect(actual).toBe(expected);
+/* });
   });
-});
-
-/* 
+}); */
+/*
 var
 scope: function-scoped, not block-scoped
        if declared outside any function, it is globally scoped

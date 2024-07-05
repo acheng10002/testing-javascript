@@ -1,9 +1,23 @@
-function orderTotal(order) {
-  return order.items.reduce(
-    (prev, cur) => cur.price * (cur.quantity || 1) + prev,
-    0
+/* this needs to be made asynchronous, returning a promise
+because fetch is an argument in orderTotal, fetch does not need to be required 
+dependency injection - technique in unit testing where I pass in what would be a module,
+as an argument instead */
+function orderTotal(fetch, order) {
+  fetch(
+    "https://eu.vatapi.com/v2/vat-rate-check?rate_type=TBE&country_code=" +
+      order.country
+  );
+  // Promise.resolve takes a value and wraps it in a promise
+  return Promise.resolve(
+    order.items.reduce((prev, cur) => cur.price * (cur.quantity || 1) + prev, 0)
   );
 }
+
+/* adding code that synchronously fetches data from a web service
+the call to do this will be mocked 
+vatAPI.com - service that will calculate the relevant VAT for me 
+1. first get acquainted with a new API 
+   call the vat api, completely isolated from all my other code */
 
 function sum(a, b) {
   return a + b;
@@ -54,6 +68,5 @@ module.exports = {
   sum,
   FlickrFetcher,
 };
-
 /* connects to the Flickr API to find the latest pictures of Pugs 
 assertion - bit that does the actual test as opposed to all the setup stuff */
