@@ -1341,7 +1341,12 @@ outgoing command - the message must be sent, otherwise, the app won't be correct
                    it creates side effects upon which others depend
                    this is an integration test
                    expect to send outgoing command messages
+                   again, expect to send
                    practical rule: break the rule if side effects are stable and cheap
+
+                   my job to make sure my mock keep promise that it will implement a common API
+
+Ensure mocks stay in sync with the API
 
 */
 test("notifies observers when cogs change", () => {
