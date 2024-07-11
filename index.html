@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Boilerplate HTML</title>
+  </head>
+  <body>
+    <h1>Hello, World!</h1>
+    <p>This is a boilerplate HTML file.</p>
+
+    <script>
+      class SimpleGreeting extends HTMLElement {
+        // Define a constructor that attaches a shadow root
+        constructor() {
+          super();
+          const shadowRoot = this.attachShadow({ mode: "open" });
+          // Use a template literal for the shadow root's innerHTML
+          shadowRoot.innerHTML = `
+            <style>
+                /* Style the web component using a style tag */
+                p {
+                    font-family: Arial, sans-serif;
+                    color: var(--color, black); /* Use a CSS variable for the color */
+                }    
+            </style>
+            <!-- The <slot> element is a placeholder for user-provided content. -->
+            <!-- If no content is provided, it displays its own default content. -->
+            <p><slot>Hello, Web Components!</slot></p>
+            `;
+        }
+
+        // Define a static getter for the observed attributes
+        static get observedAttributes() {
+          return ["color"]; // Observe the color attribute
+        }
+
+        // Define a callback for when an attribute changes
+        attributeChangedCallback(name, oldValue, newValue) {
+          // Update the CSS variable when the color attribute changes
+          if (name === "color") {
+            this.style.setProperty("--color", newValue);
+          }
+        }
+      }
+
+      // Register the custom element with a tag name
+      customElements.define("simple-greeting", SimpleGreeting);
+    </script>
+
+    <!-- Using the Web Component -->
+    <!-- Pass a custom greeting message using the slot -->
+    <simple-greeting>Hello, reader!</simple-greeting>
+    <!-- Pass a custom color using the attribute -->
+    <simple-greeting color="blue">Hello, World!</simple-greeting>
+  </body>
+</html>
